@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Formación Pastoral Juvenil</title>
+  <style>
+    body {font-family: Arial, sans-serif; margin: 20px;}
+    h2 {color: #456B75;}
+    input {margin-top: 10px;}
+    ul {margin-top: 15px;}
+  </style>
+</head>
+<body>
+  <h2>Subir Material de Formación</h2>
+  <input type="file" id="archivoInput" multiple>
+  <ul id="listaArchivos"></ul>
+
+  <script>
+    const input = document.getElementById("archivoInput");
+    const lista = document.getElementById("listaArchivos");
+
+    input.addEventListener("change", () => {
+      lista.innerHTML = "";
+      for (let archivo of input.files) {
+        let li = document.createElement("li");
+        li.textContent = archivo.name;
+        lista.appendChild(li);
+      }
+      alert("Archivos seleccionados ✅ (pero recuerda: no se guardan en internet sin un servidor)");
+    });
+  </script>
+</body>
+</html>
