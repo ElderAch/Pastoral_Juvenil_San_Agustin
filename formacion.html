@@ -6,28 +6,20 @@
   <style>
     body {font-family: Arial, sans-serif; margin: 20px;}
     h2 {color: #456B75;}
-    input {margin-top: 10px;}
-    ul {margin-top: 15px;}
+    ul {margin-top: 20px;}
+    li {margin: 10px 0;}
+    a {color: #456B75; font-weight: bold; text-decoration: none;}
+    a:hover {text-decoration: underline;}
   </style>
 </head>
 <body>
-  <h2>Subir Material de Formación</h2>
-  <input type="file" id="archivoInput" multiple>
-  <ul id="listaArchivos"></ul>
+  <h2>Documentos de Formación</h2>
+  <p>Aquí puedes consultar y descargar materiales de formación.</p>
 
-  <script>
-    const input = document.getElementById("archivoInput");
-    const lista = document.getElementById("listaArchivos");
-
-    input.addEventListener("change", () => {
-      lista.innerHTML = "";
-      for (let archivo of input.files) {
-        let li = document.createElement("li");
-        li.textContent = archivo.name;
-        lista.appendChild(li);
-      }
-      alert("Archivos seleccionados ✅ (pero recuerda: no se guardan en internet sin un servidor)");
-    });
-  </script>
+  <ul>
+    <li><a href="docs/guia_formacion.pdf" target="_blank">📖 Guía de Formación (PDF)</a></li>
+    <li><a href="docs/tema_oracion.docx" target="_blank">🙏 Tema de Oración (Word)</a></li>
+    <li><a href="docs/dinamicas.pdf" target="_blank">🎉 Dinámicas para Jóvenes (PDF)</a></li>
+  </ul>
 </body>
 </html>
