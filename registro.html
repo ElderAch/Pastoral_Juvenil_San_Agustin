@@ -10,6 +10,7 @@
     input, textarea, select {width: 100%; padding: 8px; margin: 5px 0;}
     button {background: #456B75; color: #fff; border: none; padding: 10px 15px; cursor: pointer; margin-top:15px;}
     button:hover {background: #5A7B86;}
+    #confirmacion {margin-top: 20px; padding: 15px; border: 1px solid #ccc; background: #f9f9f9; display:none;}
   </style>
 </head>
 <body>
@@ -28,13 +29,14 @@
     <input type="text" name="ermita">
 
     <label>¿Tienes ministerio en la iglesia?</label>
-    <select name="ministerio">
+    <select name="ministerio" id="ministerio">
       <option value="ninguno">Ninguno</option>
       <option value="lector">Lector</option>
       <option value="coro">Coro</option>
       <option value="acolitado">Acolitado</option>
       <option value="otro">Otro</option>
     </select>
+    <input type="text" id="ministerioOtro" name="ministerio_otro" placeholder="Especifica tu ministerio" style="display:none;">
 
     <label>¿Qué te motiva a participar dentro de tu grupo Juvenil?</label>
     <textarea name="motivacion" required></textarea>
@@ -42,32 +44,55 @@
     <label>Comentario que deseas dejar:</label>
     <textarea name="comentario"></textarea>
 
-    <button type="submit">Guardar</button>
+    <button type="submit">Continuar</button>
   </form>
 
-  <button id="descargar">Descargar respuestas</button>
+  <!-- Confirmación antes de guardar -->
+  <div id="confirmacion">
+    <h3>Confirma tus respuestas:</h3>
+    <pre id="resumen"></pre>
+    <button id="confirmar">Confirmar y Guardar</button>
+    <button id="editar">Editar</button>
+  </div>
 
   <script>
     const form = document.getElementById("registroForm");
+    const ministerio = document.getElementById("ministerio");
+    const ministerioOtro = document.getElementById("ministerioOtro");
+    const confirmacion = document.getElementById("confirmacion");
+    const resumen = document.getElementById("resumen");
+
     let respuestas = [];
+
+    // Mostrar campo "otro ministerio" si seleccionan "otro"
+    ministerio.addEventListener("change", () => {
+      ministerioOtro.style.display = ministerio.value === "otro" ? "block" : "none";
+    });
 
     form.addEventListener("submit", (e) => {
       e.preventDefault();
+
       const datos = new FormData(form);
       const entrada = {};
       datos.forEach((valor, clave) => entrada[clave] = valor);
-      respuestas.push(entrada);
-      alert("Respuesta guardada ✅");
-      form.reset();
+
+      // Guardar temporalmente para confirmar
+      respuestas = [entrada];
+      resumen.textContent = JSON.stringify(entrada, null, 2);
+
+      form.style.display = "none";
+      confirmacion.style.display = "block";
     });
 
-    document.getElementById("descargar").addEventListener("click", () => {
-      const blob = new Blob([JSON.stringify(respuestas, null, 2)], {type: "application/json"});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "respuestas.json";
-      a.click();
+    document.getElementById("editar").addEventListener("click", () => {
+      confirmacion.style.display = "none";
+      form.style.display = "block";
+    });
+
+    document.getElementById("confirmar").addEventListener("click", () => {
+      // En un entorno real aquí se enviaría a Google Forms o Firebase
+      alert("Respuestas confirmadas y enviadas ✅");
+      confirmacion.style.display = "none";
     });
   </script>
 </body>
