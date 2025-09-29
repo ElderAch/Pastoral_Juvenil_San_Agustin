@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Registro Pastoral Juvenil</title>
+  <style>
+    body {font-family: Arial, sans-serif; margin: 20px;}
+    h2 {color: #456B75;}
+    label {font-weight: bold;}
+    input, textarea {width: 100%; padding: 8px; margin: 5px 0;}
+    button {background: #456B75; color: #fff; border: none; padding: 10px 15px; cursor: pointer;}
+    button:hover {background: #5A7B86;}
+  </style>
+</head>
+<body>
+  <h2>Formulario de Registro</h2>
+  <form id="registroForm">
+    <label>Nombre:</label>
+    <input type="text" name="nombre" required>
+
+    <label>Edad:</label>
+    <input type="number" name="edad" required>
+
+    <label>Correo:</label>
+    <input type="email" name="correo" required>
+
+    <label>¿Por qué quieres unirte?</label>
+    <textarea name="motivo" required></textarea>
+
+    <br>
+    <button type="submit">Guardar</button>
+  </form>
+
+  <br>
+  <button id="descargar">Descargar respuestas</button>
+
+  <script>
+    const form = document.getElementById("registroForm");
+    let respuestas = [];
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const datos = new FormData(form);
+      const entrada = {};
+      datos.forEach((valor, clave) => entrada[clave] = valor);
+      respuestas.push(entrada);
+      alert("Respuesta guardada ✅");
+      form.reset();
+    });
+
+    document.getElementById("descargar").addEventListener("click", () => {
+      const blob = new Blob([JSON.stringify(respuestas, null, 2)], {type: "application/json"});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "respuestas.json";
+      a.click();
+    });
+  </script>
+</body>
+</html>
