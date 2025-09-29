@@ -6,9 +6,9 @@
   <style>
     body {font-family: Arial, sans-serif; margin: 20px;}
     h2 {color: #456B75;}
-    label {font-weight: bold;}
-    input, textarea {width: 100%; padding: 8px; margin: 5px 0;}
-    button {background: #456B75; color: #fff; border: none; padding: 10px 15px; cursor: pointer;}
+    label {font-weight: bold; display:block; margin-top:10px;}
+    input, textarea, select {width: 100%; padding: 8px; margin: 5px 0;}
+    button {background: #456B75; color: #fff; border: none; padding: 10px 15px; cursor: pointer; margin-top:15px;}
     button:hover {background: #5A7B86;}
   </style>
 </head>
@@ -24,21 +24,27 @@
     <label>Correo:</label>
     <input type="email" name="correo" required>
 
-    <label>Ermita a la que perteneces</label>
-    <textarea name="Ermita" required></textarea>
+    <label>Ermita:</label>
+    <input type="text" name="ermita">
 
-    <label>Zona a la que perteneces</label>
-    <textarea name="Zona" required></textarea>
+    <label>¿Tienes ministerio en la iglesia?</label>
+    <select name="ministerio">
+      <option value="ninguno">Ninguno</option>
+      <option value="lector">Lector</option>
+      <option value="coro">Coro</option>
+      <option value="acolitado">Acolitado</option>
+      <option value="otro">Otro</option>
+    </select>
 
-     <label>Tienes algun cargo o ministerio en la iglesia</label>
-    <textarea name="ministerio" required></textarea>
+    <label>¿Qué te motiva a participar dentro de tu grupo Juvenil?</label>
+    <textarea name="motivacion" required></textarea>
 
+    <label>Comentario que deseas dejar:</label>
+    <textarea name="comentario"></textarea>
 
-    <br>
     <button type="submit">Guardar</button>
   </form>
 
-  <br>
   <button id="descargar">Descargar respuestas</button>
 
   <script>
