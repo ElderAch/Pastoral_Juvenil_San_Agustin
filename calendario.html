@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Calendario - Pastoral Juvenil</title>
+  <style>
+    :root{
+      --primary:#456B75;
+      --accent:#5A7B86;
+      --muted:#f4f7f8;
+      --card:#ffffff;
+    }
+    *{box-sizing:border-box}
+    body{font-family:Arial, sans-serif;margin:0;background:var(--muted);color:#222}
+    header{background:var(--primary);color:#fff;padding:12px 18px;display:flex;align-items:center;justify-content:space-between}
+    header h1{font-size:18px;margin:0}
+    .container{max-width:1100px;margin:18px auto;padding:12px}
+    .controls{display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+    .controls .left{display:flex;gap:8px;align-items:center}
+    button, select, input[type="number"]{background:var(--card);border:1px solid #ddd;padding:8px 10px;border-radius:6px;cursor:pointer}
+    button:hover{opacity:.95}
+    .month-nav{display:flex;gap:6px;align-items:center}
+    .calendar{background:var(--card);border-radius:10px;padding:12px;box-shadow:0 6px 18px rgba(0,0,0,.06)}
+    .weekdays{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;padding:8px 0;font-weight:700;color:var(--primary)}
+    .days{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+    .day{min-height:110px;background:#fff;border-radius:8px;padding:8px;border:1px solid #eee;position:relative;overflow:hidden}
+    .day.other-month{opacity:.4}
+    .day .date-num{position:absolute;top:6px;right:8px;font-size:12px;color:#666}
+    .events-list{margin-top:22px;max-height:70px;overflow:auto;font-size:13px}
+    .event-pill{background:var(--accent);color:#fff;padding:4px 6px;border-radius:6px;margin-bottom:6px;display:block;text-decoration:none}
+    .small{font-size:13px;color:#555}
+    /* modal */
+    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:60}
+    .modal{background:var(--card);padding:18px;border-radius:10px;max-width:520px;width:94%;box-shadow:0 10px 30px rgba(0,0,0,.2)}
+    .modal h3{margin-top:0}
+    .modal form{display:grid;gap:8px}
+    label{font-weight:700;font-size:13px}
+    input[type="text"],textarea,input[type="time"]{padding:8px;border:1px solid #ddd;border-radius:6px;width:100%}
+    textarea{min-height:90px;resize:vertical}
+    .modal .actions{display:flex;gap:8px;justify-content:flex-end;margin-top:8px}
+    .controls .right{margin-left:auto;display:flex;gap:8px}
+    .hidden{display:none}
+    .footer{margin-top:14px;text-align:right;color:#666;font-size:13px}
+    @media (max-width:700px){
+      .weekdays{font-size:12px}
+      .day{min-height:100px}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Calendario Pastoral Juvenil</h1>
+    <div style="font-size:14px">Administra actividades mensuales y anuales</div>
+  </header>
+
+  <div class="container">
+    <div class="controls">
+      <div class="left month-nav">
+        <button id="prevMonth" title="Mes anterior">&larr;</button>
+        <button id="todayBtn" title="Ir a hoy">Hoy</button>
+        <button id="nextMonth" title="Mes siguiente">&rarr;</button>
+
+        <div style="display:flex;align-items:center;gap:6px;margin-left:8px">
+          <select id="monthSelect" aria-label="Mes"></select>
+          <input id="yearInput" type="number" min="1900" max="3000" style="width:88px" />
+          <button id="goTo">Ir</button>
+        </div>
+      </div>
+
+      <div class="right">
+        <button id="addEventBtn">Nueva actividad</button>
+        <button id="exportBtn" title="Exportar eventos (JSON)">Exportar</button>
+        <input id="importFile" type="file" accept="application/json" style="display:none">
+        <button id="importBtn" title="Importar eventos (JSON)">Importar</button>
+        <button id="clearBtn" title="Borrar todos los eventos">Limpiar</button>
+      </div>
+    </div>
+
+    <div class="calendar">
+      <div class="weekdays">
+        <div>Dom</div><div>Lun</div><div>Mar</div><div>Mié</div><div>Jue</div><div>Vie</div><div>Sáb</div>
+      </div>
+      <div class="days" id="daysGrid"></div>
+    </div>
+
+    <div class="footer small">Los cambios se guardan automáticamente en este navegador. Usa "Exportar" para descargar un respaldo.</div>
+  </div>
+
+  <!-- Modal para crear/editar evento -->
+  <div id="modalBackdrop" class="hidden modal-backdrop" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true">
+      <h3 id="modalTitle">Nueva Actividad</h3>
+      <form id="eventForm">
+        <input type="hidden" id="eventDate" />
+        <input type="hidden" id="eventId" />
+        <label>Título</label>
+        <input id="eventTitle" type="text" required placeholder="Ej. Reunión de grupo">
+
+        <label>Hora (opcional)</label>
+        <input id="eventTime" type="time">
+
+        <label>Descripción (opcional)</label>
+        <textarea id="eventDesc" placeholder="Lugar, responsable, notas..."></textarea>
+
+        <div class="actions">
+          <button type="button" id="deleteEventBtn" style="background:#ff6b6b;color:#fff;border:none;padding:8px 10px;border-radius:6px;display:none">Eliminar</button>
+          <button type="button" id="cancelBtn">Cancelar</button>
+          <button type="submit" id="saveBtn" style="background:var(--primary);color:#fff;border:none;padding:8px 12px;border-radius:6px">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    /***********************
+      Calendario - almacenamiento en localStorage
+    ************************/
+    const KEY = 'pastoral_eventos_v1';
+
+    // UI refs
+    const daysGrid = document.getElementById('daysGrid');
+    const monthSelect = document.getElementById('monthSelect');
+    const yearInput = document.getElementById('yearInput');
+    const prevMonth = document.getElementById('prevMonth');
+    const nextMonth = document.getElementById('nextMonth');
+    const todayBtn = document.getElementById('todayBtn');
+    const goTo = document.getElementById('goTo');
+    const addEventBtn = document.getElementById('addEventBtn');
+    const modalBackdrop = document.getElementById('modalBackdrop');
+    const eventForm = document.getElementById('eventForm');
+    const eventDateInput = document.getElementById('eventDate');
+    const eventIdInput = document.getElementById('eventId');
+    const eventTitle = document.getElementById('eventTitle');
+    const eventTime = document.getElementById('eventTime');
+    const eventDesc = document.getElementById('eventDesc');
+    const modalTitle = document.getElementById('modalTitle');
+    const deleteEventBtn = document.getElementById('deleteEventBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
+
+    const exportBtn = document.getElementById('exportBtn');
+    const importBtn = document.getElementById('importBtn');
+    const importFile = document.getElementById('importFile');
+    const clearBtn = document.getElementById('clearBtn');
+
+    // estado
+    let today = new Date();
+    let viewYear = today.getFullYear();
+    let viewMonth = today.getMonth(); // 0-11
+    let events = loadEvents(); // { "YYYY-MM-DD": [ {id, title, time, desc} ] }
+
+    // llenar select de meses
+    const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    meses.forEach((m,i) => {
+      const opt = document.createElement('option'); opt.value = i; opt.textContent = m;
+      monthSelect.appendChild(opt);
+    });
+
+    // inicializar controles
+    function syncControls(){
+      monthSelect.value = viewMonth;
+      yearInput.value = viewYear;
+    }
+
+    function saveEvents(){
+      localStorage.setItem(KEY, JSON.stringify(events));
+    }
+
+    function loadEvents(){
+      try{
+        const raw = localStorage.getItem(KEY);
+        return raw ? JSON.parse(raw) : {};
+      }catch(e){
+        console.error("Error leyendo eventos:", e);
+        return {};
+      }
+    }
+
+    function formatDateKey(d){
+      // d = Date object
+      const y = d.getFullYear();
+      const m = String(d.getMonth()+1).padStart(2,'0');
+      const day = String(d.getDate()).padStart(2,'0');
+      return `${y}-${m}-${day}`;
+    }
+
+    function renderCalendar(){
+      daysGrid.innerHTML = '';
+      const first = new Date(viewYear, viewMonth, 1);
+      const last = new Date(viewYear, viewMonth + 1, 0);
+      const startDayOfWeek = first.getDay(); // 0-6
+      const totalDays = last.getDate();
+
+      // show previous month's trailing days to fill grid (optional)
+      const prevLast = new Date(viewYear, viewMonth, 0);
+      const prevTotal = prevLast.getDate();
+
+      // grid must render 6 rows of 7 = 42 cells (guaranteed)
+      let cells = [];
+      // leading days from previous month
+      for(let i = startDayOfWeek - 1; i >= 0; i--){
+        const dayNum = prevTotal - i;
+        const dateObj = new Date(viewYear, viewMonth - 1, dayNum);
+        cells.push({d:dateObj, otherMonth:true});
+      }
+      // current month days
+      for(let d=1; d<=totalDays; d++){
+        cells.push({d:new Date(viewYear, viewMonth, d), otherMonth:false});
+      }
+      // trailing days to reach multiples of 7 (and to 42)
+      while(cells.length % 7 !== 0) {
+        const dayIndex = cells.length - (startDayOfWeek + totalDays);
+        const dateObj = new Date(viewYear, viewMonth + 1, dayIndex + 1);
+        cells.push({d:dateObj, otherMonth:true});
+      }
+      // ensure 42 cells for consistent layout (6 weeks)
+      while(cells.length < 42){
+        const lastDate = cells[cells.length - 1].d;
+        const next = new Date(lastDate.getFullYear(), lastDate.getMonth(), lastDate.getDate()+1);
+        cells.push({d: next, otherMonth: true});
+      }
+
+      cells.forEach(cell => {
+        const key = formatDateKey(cell.d);
+        const dayEl = document.createElement('div');
+        dayEl.className = 'day' + (cell.otherMonth ? ' other-month' : '');
+        dayEl.dataset.date = key;
+
+        const num = document.createElement('div');
+        num.className = 'date-num';
+        num.textContent = cell.d.getDate();
+        dayEl.appendChild(num);
+
+        // events
+        const evs = events[key] || [];
+        const evlist = document.createElement('div');
+        evlist.className = 'events-list';
+        evs.slice(0,3).forEach(ev=>{
+          const a = document.createElement('a');
+          a.href = '#';
+          a.className = 'event-pill';
+          a.textContent = (ev.time ? ev.time + ' ' : '') + ev.title;
+          a.addEventListener('click', (e) => {
+            e.preventDefault();
+            openModalForEdit(key, ev.id);
+          });
+          evlist.appendChild(a);
+        });
+        if(evs.length > 3){
+          const more = document.createElement('div');
+          more.className = 'small';
+          more.textContent = `+ ${evs.length - 3} más`;
+          evlist.appendChild(more);
+        }
+
+        dayEl.appendChild(evlist);
+
+        // click to add
+        dayEl.addEventListener('click', (e) => {
+          // avoid opening add when clicking an event link (handled separately)
+          if(e.target.closest('.event-pill')) return;
+          openModalForNew(key);
+        });
+
+        daysGrid.appendChild(dayEl);
+      });
+
+      syncControls();
+    }
+
+    // Modal functions
+    function openModalForNew(dateKey){
+      modalTitle.textContent = `Nueva actividad — ${dateKey}`;
+      eventDateInput.value = dateKey;
+      eventIdInput.value = '';
+      eventTitle.value = '';
+      eventTime.value = '';
+      eventDesc.value = '';
+      deleteEventBtn.style.display = 'none';
+      showModal();
+    }
+
+    function openModalForEdit(dateKey, id){
+      const evs = events[dateKey] || [];
+      const ev = evs.find(x => x.id === id);
+      if(!ev) return;
+      modalTitle.textContent = `Editar actividad — ${dateKey}`;
+      eventDateInput.value = dateKey;
+      eventIdInput.value = id;
+      eventTitle.value = ev.title;
+      eventTime.value = ev.time || '';
+      eventDesc.value = ev.desc || '';
+      deleteEventBtn.style.display = 'inline-block';
+      showModal();
+    }
+
+    function showModal(){
+      modalBackdrop.classList.remove('hidden');
+      modalBackdrop.style.display = 'flex';
+      modalBackdrop.setAttribute('aria-hidden','false');
+      eventTitle.focus();
+    }
+    function hideModal(){
+      modalBackdrop.classList.add('hidden');
+      modalBackdrop.style.display = 'none';
+      modalBackdrop.setAttribute('aria-hidden','true');
+    }
+
+    eventForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const dateKey = eventDateInput.value;
+      const id = eventIdInput.value || generateId();
+      const ev = { id, title: eventTitle.value.trim(), time: eventTime.value, desc: eventDesc.value.trim() };
+      if(!events[dateKey]) events[dateKey] = [];
+      // if editing, replace
+      const idx = events[dateKey].findIndex(x => x.id === id);
+      if(idx >= 0){
+        events[dateKey][idx] = ev;
+      } else {
+        events[dateKey].push(ev);
+      }
+      saveEvents();
+      renderCalendar();
+      hideModal();
+    });
+
+    deleteEventBtn.addEventListener('click', () => {
+      const dateKey = eventDateInput.value;
+      const id = eventIdInput.value;
+      if(!dateKey || !id) return;
+      events[dateKey] = (events[dateKey] || []).filter(x => x.id !== id);
+      if(events[dateKey].length === 0) delete events[dateKey];
+      saveEvents();
+      renderCalendar();
+      hideModal();
+    });
+
+    cancelBtn.addEventListener('click', () => hideModal());
+    modalBackdrop.addEventListener('click', (e) => {
+      if(e.target === modalBackdrop) hideModal();
+    });
+
+    // helper
+    function generateId(){ return 'e_' + Math.random().toString(36).slice(2,10); }
+
+    // navigation
+    prevMonth.addEventListener('click', () => {
+      viewMonth--;
+      if(viewMonth < 0){ viewMonth = 11; viewYear--; }
+      renderCalendar();
+    });
+    nextMonth.addEventListener('click', () => {
+      viewMonth++;
+      if(viewMonth > 11){ viewMonth = 0; viewYear++; }
+      renderCalendar();
+    });
+    todayBtn.addEventListener('click', () => {
+      const d = new Date();
+      viewYear = d.getFullYear(); viewMonth = d.getMonth();
+      renderCalendar();
+    });
+
+    monthSelect.addEventListener('change', () => {
+      viewMonth = parseInt(monthSelect.value,10);
+      renderCalendar();
+    });
+    goTo.addEventListener('click', () => {
+      const y = parseInt(yearInput.value,10);
+      if(!isNaN(y)){ viewYear = y; renderCalendar(); }
+    });
+
+    addEventBtn.addEventListener('click', () => {
+      // open new event on currently selected day (default today in view)
+      const d = new Date(viewYear, viewMonth, 1);
+      const dateKey = formatDateKey(d);
+      openModalForNew(dateKey);
+    });
+
+    // export/import/clear
+    exportBtn.addEventListener('click', () => {
+      const data = JSON.stringify(events, null, 2);
+      const blob = new Blob([data], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `eventos_calendario_${viewYear}_${viewMonth+1}.json`;
+      a.click();
+    });
+
+    importBtn.addEventListener('click', () => importFile.click());
+    importFile.addEventListener('change', (evt) => {
+      const file = evt.target.files[0];
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try{
+          const parsed = JSON.parse(e.target.result);
+          // merge with existing events (keys preserved)
+          events = Object.assign({}, events, parsed);
+          saveEvents();
+          renderCalendar();
+          alert('Importado correctamente');
+        }catch(err){
+          alert('Archivo no válido');
+          console.error(err);
+        }
+      };
+      reader.readAsText(file);
+      importFile.value = '';
+    });
+
+    clearBtn.addEventListener('click', () => {
+      if(confirm('¿Borrar todos los eventos guardados en este navegador? Esta acción no se puede deshacer.')) {
+        events = {};
+        saveEvents();
+        renderCalendar();
+      }
+    });
+
+    // inicializar vista
+    function init(){
+      // set controls
+      viewYear = viewYear || (new Date()).getFullYear();
+      viewMonth = viewMonth || (new Date()).getMonth();
+      syncControls();
+      renderCalendar();
+    }
+
+    // start
+    init();
+  </script>
+</body>
+</html>
