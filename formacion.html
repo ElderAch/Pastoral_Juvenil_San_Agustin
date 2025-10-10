@@ -2,24 +2,127 @@
 <html lang="es">
 <head>
   <meta charset="utf-8">
-  <title>Formación Pastoral Juvenil</title>
+  <title>Biblioteca de Formación - Pastoral Juvenil</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
-    body {font-family: Arial, sans-serif; margin: 20px;}
-    h2 {color: #456B75;}
-    ul {margin-top: 20px;}
-    li {margin: 10px 0;}
-    a {color: #456B75; font-weight: bold; text-decoration: none;}
-    a:hover {text-decoration: underline;}
+    body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+      color: #333;
+      background-image: url('https://upload.wikimedia.org/wikipedia/commons/4/4e/Cross_icon_1.svg');
+      background-repeat: no-repeat;
+      background-size: 150px;
+      background-position: 95% 5%;
+    }
+
+    header {
+      background: #004d40;
+      color: white;
+      text-align: center;
+      padding: 1.5rem 0;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    }
+
+    header h1 {
+      font-size: 2rem;
+      margin: 0;
+    }
+
+    main {
+      max-width: 900px;
+      margin: 2rem auto;
+      background: white;
+      padding: 2rem;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      color: #00695c;
+      border-bottom: 3px solid #80cbc4;
+      padding-bottom: 0.5rem;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    li {
+      background: #e0f2f1;
+      margin: 0.8rem 0;
+      padding: 1rem;
+      border-radius: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: background 0.3s;
+    }
+
+    li:hover {
+      background: #b2dfdb;
+    }
+
+    a {
+      text-decoration: none;
+      color: #004d40;
+      font-weight: bold;
+    }
+
+    a i {
+      margin-right: 8px;
+    }
+
+    .upload-section {
+      background: #fafafa;
+      border: 2px dashed #80cbc4;
+      padding: 1.5rem;
+      border-radius: 10px;
+      margin-top: 2rem;
+      text-align: center;
+    }
+
+    input[type="file"] {
+      margin-top: 1rem;
+    }
+
+    footer {
+      text-align: center;
+      padding: 1rem;
+      background: #004d40;
+      color: white;
+      margin-top: 3rem;
+    }
   </style>
 </head>
 <body>
-  <h2>Documentos de Formación</h2>
-  <p>Aquí puedes consultar y descargar materiales de formación.</p>
+  <header>
+    <h1>📚 Biblioteca de Formación - Pastoral Juvenil</h1>
+    <p>Materiales para el crecimiento espiritual y comunitario</p>
+  </header>
 
-  <ul>
-    <li><a href="docs/guia_formacion.pdf" target="_blank">📖 Guía de Formación (PDF)</a></li>
-    <li><a href="docs/tema_oracion.docx" target="_blank">🙏 Tema de Oración (Word)</a></li>
-    <li><a href="docs/dinamicas.pdf" target="_blank">🎉 Dinámicas para Jóvenes (PDF)</a></li>
-  </ul>
+  <main>
+    <h2><i class="fas fa-folder-open"></i> Archivos Disponibles</h2>
+    <ul>
+      <li><a href="docs/guia_formacion.pdf" target="_blank"><i class="fas fa-book"></i> Guía de Formación (PDF)</a></li>
+      <li><a href="docs/tema_oracion.docx" target="_blank"><i class="fas fa-praying-hands"></i> Tema de Oración (Word)</a></li>
+      <li><a href="docs/dinamicas.pdf" target="_blank"><i class="fas fa-people-group"></i> Dinámicas para Jóvenes (PDF)</a></li>
+    </ul>
+
+    <!-- Sección de carga solo para el administrador -->
+    <div class="upload-section">
+      <h2><i class="fas fa-upload"></i> Subir nuevo documento (solo administrador)</h2>
+      <p>Selecciona un archivo para agregar a la biblioteca:</p>
+      <form action="upload.php" method="post" enctype="multipart/form-data">
+        <input type="file" name="archivo" accept=".pdf,.docx,.pptx,.txt" required><br>
+        <button type="submit" style="margin-top:10px; padding:10px 20px; background:#00695c; color:white; border:none; border-radius:8px; cursor:pointer;">Subir Archivo</button>
+      </form>
+    </div>
+  </main>
+
+  <footer>
+    <p>© 2025 Pastoral Juvenil | Inspirados por la fe y el servicio</p>
+  </footer>
 </body>
 </html>
